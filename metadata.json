@@ -1,0 +1,6 @@
+{
+  "name": "잡있으 (JobIs) - AI 커리어 탐색",
+  "description": "희망 직무가 명확하지 않은 구직자를 위한 AI 커리어 탐색 및 맞춤 채용공고 우편배달 모바일 앱",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
