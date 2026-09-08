@@ -1,4 +1,4 @@
-# Jobiss — Project Learning v0.1
+# Jobiss — Project Learning v0.2
 
 This file contains accumulated project learnings from prior Jobiss design work.
 
@@ -18,24 +18,24 @@ The metaphor should support the product meaning, not become decorative stationer
 
 ---
 
-## 2. The most effective explanatory UI
+## 2. Strong reusable product-explainer pattern
 
-A previous design communicated the service particularly well by presenting a personalized job opportunity almost like a letter addressed directly to the user.
+A previous design communicated the service especially well through a **separate interactive letter section**, not merely a small letter motif inside the hero.
 
-The effective structure included ideas such as:
-- addressing the user by name
-- showing the opportunity that arrived
-- explaining why this opportunity was connected to the user
-- connecting the recommendation to concrete past experiences
-- showing what is already strong
-- showing what is still missing
-- suggesting what the user could prepare next
+The valuable pattern was:
+- the left side showed different sources of connection such as `프로젝트에서 찾은 연결`, `관심사에서 찾은 연결`, `활동에서 찾은 연결`
+- selecting a source changed the content shown on the right
+- the right side felt like reading an actual personalized letter addressed to the user
+- the letter showed the arrived opportunity and explained why it connected to the user
+- the same experience could surface what is already strong, what still needs to be filled, and what to prepare next
 
-This worked because one interface explained the core Jobiss value without requiring a long product explanation.
+This pattern worked because a visitor could understand what Jobiss actually does by interacting with one concrete product moment.
 
-The exact layout is not important.
+When a landing page needs to explain the core service, this interaction is a high-value pattern worth preserving or meaningfully evolving as its **own major section**.
 
-The underlying principle is:
+Do not force it into the hero if doing so weakens either the hero composition or the letter-reading experience.
+
+The underlying principle remains:
 
 **prefer concrete personalized product moments over abstract descriptions of what the AI does.**
 
@@ -89,6 +89,7 @@ The user has responded positively to designs that:
 - use product UI as part of the storytelling
 - contain one strong product-specific idea rather than many decorative ideas
 - feel polished without becoming generic corporate SaaS
+- give the hero enough visual presence to feel memorable, not merely correct
 
 The user has responded less positively when:
 - visible text dominates the page
@@ -96,18 +97,61 @@ The user has responded less positively when:
 - unrelated decorative elements appear in empty areas
 - the design looks assembled from familiar SaaS sections
 - brand metaphors become overly literal or cute
+- repeated phone/device mockups are used without adding a distinct new product idea
 
 These observations should inform judgment, not become rigid layout rules.
 
 ---
 
-## 6. Important distinction
+## 6. Visual assets and hero impact
+
+Clean layout alone is not the target.
+
+When bespoke imagery, illustration, composited product objects, or other generated visual assets would materially raise the quality of the landing page, the user prefers that they be created proactively and integrated into the real composition.
+
+Use generated assets when they strengthen:
+- the hero's first-glance impact
+- the letter / arrival metaphor
+- a product-specific visual world
+- storytelling that UI components alone cannot express well
+
+Avoid generic filler imagery or decorative assets with no product meaning.
+
+---
+
+## 7. Landing-page-specific learning
+
+### Broader-than-a-resume context bar
+A compact horizontal moment that shows Jobiss reading beyond a single resume has worked well.
+
+For example, a concise band can communicate sources such as:
+- 학력/교육
+- 프로젝트
+- 포트폴리오
+- GitHub
+- 자격증
+- 관심사/활동
+
+This is useful because it explains the breadth of context with very little copy.
+
+### Mobile prototype reuse
+The repository contains a detailed mobile prototype and multiple phone-framed screens.
+
+These screens are useful evidence of real product functionality, but repeatedly placing the same phone or mobile-gallery mockups into the landing page has not added enough new value.
+
+Use an existing mobile screen only when it communicates a **specific, distinct product moment** that is best shown that way.
+
+Do not insert phone frames merely because ready-made mobile components exist in the repository.
+
+---
+
+## 8. Important distinction
 
 Do not optimize merely for fewer elements.
 
 A successful Jobiss design should balance:
 
-**clarity + product specificity + emotional meaning + real product plausibility.**
+**clarity + product specificity + emotional meaning + visual attraction + real product plausibility.**
 
 A visually minimal result is not automatically better.
 
@@ -115,7 +159,7 @@ Likewise, a visually expressive result is useful only when the expression streng
 
 ---
 
-## 7. Current design objective
+## 9. Current design objective
 
 When designing Jobiss, aim to make a first-time visitor understand through the interface itself:
 
@@ -123,4 +167,5 @@ When designing Jobiss, aim to make a first-time visitor understand through the i
 2. It discovers connections between the user's accumulated experiences and possible work.
 3. Relevant opportunities arrive rather than requiring endless searching.
 4. Jobiss explains why an opportunity appeared.
-5. The user remains the person who decides what to pursue.
+5. It can show what is already strong, what may be missing, and what to prepare next.
+6. The user remains the person who decides what to pursue.
