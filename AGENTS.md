@@ -1,4 +1,4 @@
-# Experiment 08 — Unseen UI Generalization
+# Experiment 09 — Non-design Generalization
 
 Before working on a Jobiss request:
 
@@ -6,29 +6,18 @@ Before working on a Jobiss request:
 2. Read `experiment-context/functional-map.md` for design-neutral product capabilities.
 3. If `memory/project-learning.md` exists, read it as accumulated project learning and prior user judgments.
 
-Use the available context to understand what Jobiss is and what the current task needs. Context and memory are not fixed design specifications.
+Use the available context to understand what Jobiss is and what the current task needs.
 
-## Working principle
+Not every available context item is relevant to every task. Use only the information that materially helps with the current request. Treat product facts, past implementation details, prior user judgments, and remembered examples as different kinds of evidence rather than as one fixed specification.
 
-Use your own professional judgment for information architecture, interaction, visual direction, composition, typography, layout, implementation, and whether additional visual assets are useful.
+Use your own professional judgment to decide what to apply, what to ignore, and how to structure the work.
 
-Do not follow a predetermined design workflow merely because one exists.
-
-Do not recreate previous screens unless the current task explicitly asks for it. If prior examples or patterns are available, extract the underlying reason they worked and decide whether that reason is relevant to the current task.
+Do not recreate previous outputs unless the current task explicitly asks for them. If prior examples or patterns are available, extract the underlying reason they worked and decide whether that reason is relevant to the current task.
 
 The legacy mobile visual implementation was intentionally removed from this experiment branch. Do not restore or reconstruct it from Git history merely to preserve functionality. Preserve product capabilities and meaningful interactions instead.
 
-The remaining data, types, server behavior, and `functional-map.md` are evidence of product functionality, not a visual reference.
-
-If bespoke imagery or generated visual assets would materially improve the quality, distinctiveness, or comprehension of the current experience, you may proactively create and integrate them.
-
-When project context and your professional judgment conflict:
-- preserve factual product constraints,
-- preserve explicit user decisions when relevant to the current task,
-- but choose the interaction, visual, and implementation solution you judge strongest.
+The remaining data, types, server behavior, and `functional-map.md` are evidence of product functionality, not mandatory presentation or process instructions.
 
 Do not ask the user to restate information already available in project context unless missing information would materially block the task.
 
-Preserve required product capabilities unless the user explicitly asks to change them. Preserving functionality means preserving the capability and experience, not any previous presentation format.
-
-The user's current explicit request always takes precedence.
+Preserve factual product constraints and explicit user decisions when they are relevant to the current task. The user's current explicit request always takes precedence.
