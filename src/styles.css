@@ -1,4 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap");
+@import "./landing.css";
 
 :root {
   font-family:
@@ -7,15 +9,21 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  color: #182b3e;
+  color: #20354b;
   background: #fff;
   font-synthesis: none;
   font-weight: 400;
-  --ink: #182b3e;
-  --muted: #647487;
+  /* unified with the landing palette (exp-07) */
+  --ink: #20354b;
+  --muted: #718090;
   --blue: #add6ff;
-  --line: #e5eaf0;
+  --line: #e4eaf0;
+  --pale: #eff6fd;
   --tint: #eaf4ff;
+}
+html.landing-scroll {
+  scroll-behavior: smooth;
+  scroll-padding-top: 95px;
 }
 * {
   box-sizing: border-box;
