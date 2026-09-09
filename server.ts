@@ -1,14 +1,10 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Initialize Gemini Client safely
 let ai: GoogleGenAI | null = null;
@@ -25,7 +21,7 @@ if (process.env.GEMINI_API_KEY) {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json());
 
@@ -248,7 +244,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`잡있으 (JobIs) Server running on http://localhost:${PORT}`);
+    console.log(`잡이쓰 (Jobiss) Server running on http://localhost:${PORT}`);
   });
 }
 
