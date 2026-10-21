@@ -2,9 +2,10 @@
 
 Before working on a Jobiss request:
 
-1. Read `experiment-context/jobiss-brief.md` for current product context and repository status.
-2. Read `experiment-context/functional-map.md` for design-neutral product capabilities.
-3. If `memory/project-learning.md` exists, read it as accumulated project learning and prior user judgments.
+1. Read `experiment-context/product-plan.md`. This is the standing plan — why the product exists, the problems it answers, and the decisions already made. Other documents defer to it.
+2. Read `experiment-context/jobiss-brief.md` for compressed product context and repository status.
+3. Read `experiment-context/functional-map.md` for design-neutral product capabilities.
+4. If `memory/project-learning.md` exists, read it as accumulated project learning and prior user judgments.
 
 Use the available context to understand what Jobiss is and what the current task needs. Context and memory are not fixed design specifications.
 

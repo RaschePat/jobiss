@@ -1,4 +1,4 @@
-# Jobiss — Project Learning v0.2
+# Jobiss — Project Learning v0.3
 
 This file contains accumulated project learnings from prior Jobiss design work.
 
@@ -8,11 +8,15 @@ These are not mandatory layouts or fixed aesthetic rules. Treat them as evidence
 
 ## 1. Core experience
 
-Jobiss is most clearly understood when the experience feels like:
+Two things carry the product together: **context that accumulates**, so the user never has to re-explain themselves, and **opportunities that arrive** in place of the manual loop the user ran by hand (search job sites, copy a posting, ask an AI "does this fit me?", repeat). Neither works alone. See `experiment-context/product-plan.md`.
+
+The experience is most clearly understood at the surface when it feels like:
 
 **an opportunity that understands the user's context arrives to them, rather than the user endlessly searching for it.**
 
 The letter / mailbox metaphor has repeatedly worked well because it makes this difference immediately understandable.
+
+The mailbox is not decoration. It names a real, repeated manual task that the product replaces. See section 10.
 
 The metaphor should support the product meaning, not become decorative stationery imagery.
 
@@ -164,8 +168,28 @@ Likewise, a visually expressive result is useful only when the expression streng
 When designing Jobiss, aim to make a first-time visitor understand through the interface itself:
 
 1. Jobiss learns from more than a resume.
-2. It discovers connections between the user's accumulated experiences and possible work.
-3. Relevant opportunities arrive rather than requiring endless searching.
-4. Jobiss explains why an opportunity appeared.
-5. It can show what is already strong, what may be missing, and what to prepare next.
-6. The user remains the person who decides what to pursue.
+2. What the user has done becomes evidence, and that evidence keeps accumulating instead of being re-explained for every application.
+3. It discovers connections between those accumulated experiences and possible work.
+4. Relevant opportunities arrive rather than requiring endless searching.
+5. Jobiss explains why an opportunity appeared.
+6. It can show what is already strong, what may be missing, and what to prepare next.
+7. The user remains the person who decides what to pursue.
+
+Item 2 is the one most often lost. A design that communicates 1, 4, and 5 well but leaves a visitor thinking Jobiss is a smarter job alert has explained the surface and missed the product.
+
+---
+
+## 10. Strategic judgment — 2026-09-10, revised 2026-09-11
+
+**Revision (2026-09-11):** the 09-10 conclusion below demoted the mailbox to a mere consumer of the profile. That was wrong. It read the mailbox as a metaphor, when it is the automation of a loop the founder actually ran by hand. The profile and the arriving postings are co-equal. The reasoning about cheap explanations and hallucination risk still holds; the demotion of delivery does not. The standing plan is `experiment-context/product-plan.md`.
+
+Original 09-10 reasoning, kept for the record:
+
+- The mailbox is the structurally weakest bet. "Opportunities arrive" only holds if supply exists, and the job data belongs to someone else — the APIs do not even return posting bodies. The product surface was still mailbox-centric while the strategy notes already said the mailbox is not the differentiator.
+- Explanations became cheap. A paragraph on "why this posting fits you" is something any competitor with an LLM can ship tomorrow. What cannot be copied quickly is a user's evidence profile built up over time. The moat is only there.
+- Centering on accumulated evidence also relieves the adjacent problems: it reduces dependence on job-supply data, and it creates a reason to return when nothing new has arrived.
+- Hallucination risk is existential here. For a product whose promise is "we do not make things up," one fabricated report destroys the whole promise. Evidence must trace to real user input.
+
+**What this does not decide:** narrowing the beta audience, the institutional (university career center / bootcamp) channel, and the Score vs Evidence question all remain open. See the Open Questions section in `experiment-context/jobiss-brief.md`.
+
+**How to apply (as revised):** do not trade one half for the other. Keep the profile inspectable and correctable, keep delivery honest about what it actually knows, and never let a generated explanation claim more than the user's own input supports.
