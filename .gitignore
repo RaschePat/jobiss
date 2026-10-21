@@ -6,3 +6,11 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# 이 저장소는 npm을 쓴다. pnpm 시도 흔적은 올리지 않는다.
+.pnpm-store/
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# 포트폴리오 이미지는 폴더로 올리고 같은 내용의 압축본은 뺀다.
+artifacts/*.zip
