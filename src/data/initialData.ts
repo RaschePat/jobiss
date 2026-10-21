@@ -1,90 +1,9 @@
-import { UserProfile, JobPosting, JobHypothesis, NotificationItem } from '../types';
+import { JobPosting } from '../types';
 
-export const initialUserProfile: UserProfile = {
-  id: 'user_001',
-  name: '민석',
-  isLoggedIn: true,
-  onboardingCompleted: true,
-  interestSignals: ['글쓰기·콘텐츠', '마케팅', '디자인', '기획'],
-  activities: [
-    {
-      id: 'act_1',
-      title: '블로그 글 32편 발행',
-      category: 'blog',
-      countOrDesc: '32편 발행',
-      iconName: 'FileText'
-    },
-    {
-      id: 'act_2',
-      title: '인스타그램 콘텐츠 기획·발행 28건',
-      category: 'instagram',
-      countOrDesc: '기획·발행 28건',
-      iconName: 'BarChart2'
-    },
-    {
-      id: 'act_3',
-      title: '포트폴리오 6개 프로젝트 보유',
-      category: 'portfolio',
-      countOrDesc: '6개 프로젝트 보유',
-      iconName: 'Folder'
-    },
-    {
-      id: 'act_4',
-      title: '노션 서비스 기획 스터디 정리 4편',
-      category: 'project',
-      countOrDesc: '스터디 및 아티클 4편',
-      iconName: 'Bookmark'
-    }
-  ],
-  selectedTracks: ['콘텐츠 마케터', 'UI/UX 디자이너', '서비스 기획자'],
-  careerGoalNote: '콘텐츠 작성과 사용자 경험 기획 역량을 살려 주도적으로 성장할 수 있는 역할 탐색 중',
-  notificationsEnabled: true,
-  deliveryFrequency: 'daily'
-};
-
-export const initialJobHypotheses: JobHypothesis[] = [
-  {
-    id: 'hyp_1',
-    trackName: '콘텐츠 마케터',
-    category: '마케팅',
-    confidenceScore: 92,
-    status: 'recommended',
-    rationale: '지속적인 블로그 글쓰기 경험과 인스타그램 채널 콘텐츠 발행 신호가 가장 강력하게 일치해요.',
-    keySignals: ['글쓰기·콘텐츠', '스토리텔링', 'SNS 채널 운영'],
-    matchedJobsCount: 8
-  },
-  {
-    id: 'hyp_2',
-    trackName: 'UI/UX 디자이너',
-    category: '디자인',
-    confidenceScore: 84,
-    status: 'recommended',
-    rationale: '포트폴리오 프로젝트 보유 및 시각적 레이아웃 구성에 대한 관심 신호가 관찰돼요.',
-    keySignals: ['디자인 툴', '사용자 경험', '포트폴리오'],
-    matchedJobsCount: 5
-  },
-  {
-    id: 'hyp_3',
-    trackName: '서비스 기획자 (PM/PO)',
-    category: '기획',
-    confidenceScore: 78,
-    status: 'exploring',
-    rationale: '문제 정의 및 서비스 구조화 스터디 기록을 바탕으로 기획 트랙 가능성을 탐색 중이에요.',
-    keySignals: ['기획', '문제 정의', '문서화'],
-    matchedJobsCount: 4
-  },
-  {
-    id: 'hyp_4',
-    trackName: '브랜드 에디터',
-    category: '콘텐츠',
-    confidenceScore: 74,
-    status: 'secondary',
-    rationale: '브랜드 보이스 형성 및 텍스트 기반 에디토리얼 작업에 적합한 역량을 보여요.',
-    keySignals: ['글쓰기·콘텐츠', '브랜딩', '카피라이팅'],
-    matchedJobsCount: 3
-  }
-];
-
+/**
+ * 랜딩의 데모 편지와 온보딩 체험 공고가 참조하는 예시 데이터.
+ * 실제 채용공고가 아니며, 화면에서도 '체험'으로 표시한다.
+ */
 export const initialJobPostings: JobPosting[] = [
   {
     id: 'job_1',
@@ -96,7 +15,6 @@ export const initialJobPostings: JobPosting[] = [
     category: '콘텐츠',
     tags: ['콘텐츠', '마케팅', '블로그', 'SNS'],
     arrivalReason: '글쓰기·콘텐츠 관심과 블로그 운영 경험이 이 직무와 잘 맞을 것 같아서 도착했어요.',
-    matchScore: 94,
     pros: [
       '블로그 운영 및 콘텐츠 발행 경험이 있어요.',
       '글쓰기·콘텐츠에 지속적인 관심을 보여왔어요.',
@@ -132,7 +50,6 @@ export const initialJobPostings: JobPosting[] = [
     category: '디자인',
     tags: ['UI/UX', 'Figma', '디자인시스템'],
     arrivalReason: '포트폴리오와 디자인 관심 신호가 이 직무와 연결돼요.',
-    matchScore: 86,
     pros: [
       '실제 6개 이상의 프로젝트 포트폴리오를 구성해 본 경험이 있어요.',
       '사용자 중심의 화면 구조와 시각적 위계에 관심이 높아요.',
@@ -165,7 +82,6 @@ export const initialJobPostings: JobPosting[] = [
     category: '마케팅',
     tags: ['퍼포먼스', '마케팅기획', '캠페인'],
     arrivalReason: '마케팅 콘텐츠 기획 경험이 이 직무와 잘 맞아요.',
-    matchScore: 82,
     pros: [
       '인스타그램 28건의 콘텐츠 기획 경험으로 타깃 맞춤 메시지 작성에 능숙해요.',
       '트렌디한 카피라이팅과 기획 감각을 보유하고 있어요.'
@@ -197,7 +113,6 @@ export const initialJobPostings: JobPosting[] = [
     category: '기획',
     tags: ['서비스기획', 'PM', '데이터분석'],
     arrivalReason: '노션 아티클 정리와 논리적 문제 정의 관심 신호가 연결돼요.',
-    matchScore: 79,
     pros: [
       '정보를 구조화하고 체계적으로 문서화하는 역량이 돋보여요.',
       '서비스 기능에 대한 비판적 사고와 사용자 관점의 개선 아이디어가 풍부해요.'
@@ -226,7 +141,6 @@ export const initialJobPostings: JobPosting[] = [
     category: '콘텐츠',
     tags: ['에디터', '브랜딩', '카피라이팅'],
     arrivalReason: '글쓰기 관심과 지속적인 텍스트 발행 역량이 높은 평가를 받았어요.',
-    matchScore: 88,
     pros: [
       '정기적인 텍스트 발행 습관으로 지속적인 창작 호흡을 유지하고 있어요.',
       '섬세한 문장 구사력과 브랜드 톤앤매너 조율 역량이 잠재되어 있어요.'
@@ -254,7 +168,6 @@ export const initialJobPostings: JobPosting[] = [
     category: '마케팅',
     tags: ['그로스', 'A/B테스트', '콘텐츠'],
     arrivalReason: '인스타그램 콘텐츠 분석 및 마케팅 기획 역량을 바탕으로 매칭되었어요.',
-    matchScore: 81,
     pros: [
       '콘텐츠 소재 제작부터 반응 파악까지 빠른 호흡으로 실행할 수 있어요.'
     ],
@@ -269,30 +182,5 @@ export const initialJobPostings: JobPosting[] = [
     salary: '3,700 ~ 4,700만원',
     experienceLevel: '신입 ~ 경력 2년',
     roleSummary: '가설 기반 콘텐츠 실험으로 신규 유저 유입과 전환을 극대화할 그로스 마케터를 찾습니다.'
-  }
-];
-
-export const initialNotifications: NotificationItem[] = [
-  {
-    id: 'notif_1',
-    title: '새로운 공고가 우편함에 도착했어요 💌',
-    message: '민석님의 블로그 및 글쓰기 활동과 잘 맞는 [브랜딩랩] 콘텐츠 마케터 공고가 도착했습니다.',
-    timestamp: '10분 전',
-    read: false,
-    jobId: 'job_1'
-  },
-  {
-    id: 'notif_2',
-    title: '직무 가설이 더 정교해졌어요 🧭',
-    message: '새로 등록해주신 활동을 분석하여 [UI/UX 디자이너] 트랙 추천도가 업데이트되었습니다.',
-    timestamp: '2시간 전',
-    read: false
-  },
-  {
-    id: 'notif_3',
-    title: '우편배달부의 주간 커리어 리포트',
-    message: '이번 주 민석님에게 가장 반응이 좋았던 상위 직무는 [콘텐츠 마케터]였습니다.',
-    timestamp: '어제',
-    read: true
   }
 ];

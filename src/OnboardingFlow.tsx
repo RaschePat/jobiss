@@ -18,6 +18,7 @@ import {
   MessageCircle,
   PenLine,
   Plus,
+  Quote,
   Search,
   Shapes,
   ShieldCheck,
@@ -28,37 +29,44 @@ import {
   RotateCcw,
 } from "lucide-react";
 import {
-  analyzeLocally,
   interests,
   mergeJobFeedback,
   requestAnalysis,
   sampleJobs,
-  type AnalysisResult,
+  segmentExperience,
 } from "./onboarding";
-import type { JobPosting } from "./types";
+import type {
+  AnalysisResult,
+  ConversationTurn,
+  JobHypothesis,
+  JobPosting,
+  ReadingStatus,
+} from "./types";
 
 type Page = 1 | 2 | 3 | "inbox" | "paused";
 type Draft = {
-  version: 1;
+  version: 2;
   page: Page;
   resume: 1 | 2 | 3 | "inbox";
   name: string;
   tags: string[];
   experience: string;
   result: AnalysisResult | null;
+  turns: ConversationTurn[];
   tracks: string[];
   jobs: JobPosting[];
   done: string[];
 };
-const STORAGE = "jobiss.onboarding.v1";
+const STORAGE = "jobiss.onboarding.v2";
 const fresh = (): Draft => ({
-  version: 1,
+  version: 2,
   page: 1,
   resume: 1,
   name: "",
   tags: [],
   experience: "",
   result: null,
+  turns: [],
   tracks: [],
   jobs: [],
   done: [],
@@ -69,7 +77,7 @@ function readDraft(): Draft {
     const data = JSON.parse(localStorage.getItem(STORAGE) || "null");
     if (
       !data ||
-      data.version !== 1 ||
+      data.version !== 2 ||
       ![1, 2, 3, "inbox", "paused"].includes(data.page)
     )
       return fresh();
@@ -81,34 +89,26 @@ function readDraft(): Draft {
       !stringArray(data.tags) ||
       !stringArray(data.tracks) ||
       !stringArray(data.done) ||
-      !Array.isArray(data.jobs)
+      !Array.isArray(data.jobs) ||
+      !Array.isArray(data.turns)
     )
       return fresh();
     if (
       data.result &&
       (!Array.isArray(data.result.hypotheses) ||
-        !stringArray(data.result.signals) ||
-        !data.result.hypotheses.every(
-          (h: any) =>
-            h &&
-            typeof h.id === "string" &&
-            typeof h.trackName === "string" &&
-            typeof h.category === "string" &&
-            typeof h.rationale === "string" &&
-            stringArray(h.keySignals),
-        ))
+        !Array.isArray(data.result.evidence) ||
+        !Array.isArray(data.result.questions))
     )
       return fresh();
     if (
       !data.jobs.every(
-        (j: any) =>
-          j &&
-          typeof j.id === "string" &&
-          typeof j.title === "string" &&
-          stringArray(j.pros) &&
-          stringArray(j.checkPoints) &&
-          stringArray(j.evidences) &&
-          stringArray(j.preparationTips),
+        (job: any) =>
+          job &&
+          typeof job.id === "string" &&
+          typeof job.title === "string" &&
+          stringArray(job.pros) &&
+          stringArray(job.checkPoints) &&
+          stringArray(job.evidences),
       )
     )
       return fresh();
@@ -133,6 +133,12 @@ const iconMap = {
 };
 const stepNames = ["관심 찾기", "경험 더하기", "가능성 발견"];
 
+const statusLabel: Record<ReadingStatus, string> = {
+  supported: "원문에 근거 있음",
+  tentative: "다른 해석도 가능",
+  insufficient: "근거 부족",
+};
+
 function Wordmark() {
   return (
     <span className="wordmark" aria-label="잡이쓰">
@@ -146,14 +152,32 @@ function LetterPreview({
   name,
   experience,
   stage,
+  analysed,
 }: {
   tags: string[];
   name: string;
   experience: string;
   stage: Page;
+  /** 분석이 끝났다면 사용자 정정까지 반영된 현재 가설. 태그보다 우선한다. */
+  analysed?: { role: string; quote: string } | null;
 }) {
-  const preview = analyzeLocally(experience, tags).hypotheses[0];
-  const role = preview?.trackName || "나와 연결되는 새로운 일";
+  const picked = interests.find((item) => item.label === tags[0]);
+  const firstQuote = segmentExperience(experience)[0] || "";
+  const role =
+    analysed?.role ||
+    (analysed === null ? "" : picked?.role) ||
+    "나와 연결되는 새로운 일";
+  const highlight = analysed?.quote
+    ? analysed.quote.length > 20
+      ? `${analysed.quote.slice(0, 20)}…`
+      : analysed.quote
+    : picked && analysed !== null
+      ? picked.label
+      : firstQuote
+      ? firstQuote.length > 20
+        ? `${firstQuote.slice(0, 20)}…`
+        : firstQuote
+      : "";
   return (
     <aside className="preview-panel" aria-label="첫 편지 미리보기">
       <div className="preview-heading">
@@ -181,10 +205,10 @@ function LetterPreview({
           <p className="letter-eyebrow">이런 연결이 기다리고 있어요</p>
           <h3 key={role}>{role}</h3>
           <p className="letter-copy">
-            {preview ? (
+            {highlight ? (
               <>
-                당신이 남긴 <strong>{preview.keySignals[0]}</strong>,<br />이
-                일과 연결해 보면 어떨까요?
+                당신이 남긴 <strong>{highlight}</strong>,<br />이 일과 연결해
+                보면 어떨까요?
               </>
             ) : (
               <>
@@ -194,12 +218,11 @@ function LetterPreview({
             )}
           </p>
           <div className="letter-tags">
-            {(tags.length
-              ? tags.slice(0, 2)
-              : preview?.keySignals || ["당신의 관심", "당신의 경험"]
-            ).map((tag) => (
-              <span key={tag}>{tag}</span>
-            ))}
+            {(tags.length ? tags.slice(0, 2) : ["당신의 관심", "당신의 경험"]).map(
+              (tag) => (
+                <span key={tag}>{tag}</span>
+              ),
+            )}
           </div>
           <div className="letter-bottom">
             <span>나의 경험에서 찾은 연결</span>
@@ -220,7 +243,7 @@ function LetterPreview({
       </div>
       <div className="preview-caption">
         <span className="live-dot" />
-        {preview
+        {highlight
           ? "남겨주신 이야기로 미리 채워본 편지예요"
           : "관심을 고르면 편지가 조금씩 채워져요"}
       </div>
@@ -244,6 +267,9 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
   const [help, setHelp] = useState(false);
   const [filter, setFilter] = useState<"all" | "saved" | "passed">("all");
   const [openedId, setOpenedId] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [correcting, setCorrecting] = useState<string | null>(null);
+  const [correctionText, setCorrectionText] = useState("");
   const controller = useRef<AbortController | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
@@ -251,6 +277,20 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
     setDraft((old) => ({ ...old, ...values }));
   const page = draft.page;
   const currentJob = draft.jobs.find((job) => job.id === openedId);
+  const result = draft.result;
+  const quoteOf = (id: string) =>
+    result?.evidence.find((span) => span.id === id)?.quote || "";
+  // AI 질문 id는 순번이라 다음 분석에서 다른 질문이 같은 id를 받을 수 있다. 내용까지 맞아야 답한 것으로 본다.
+  const openQuestions =
+    result?.questions.filter(
+      (question) =>
+        !draft.turns.some(
+          (turn) =>
+            turn.kind === "answer" &&
+            turn.targetId === question.id &&
+            turn.targetLabel === question.question,
+        ),
+    ) || [];
 
   useEffect(() => {
     try {
@@ -288,26 +328,27 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
         : [...old.tags, label],
     }));
   }
-  async function analyze(event?: FormEvent) {
-    event?.preventDefault();
+
+  async function runAnalysis(turns: ConversationTurn[], next: Partial<Draft>) {
     if (busy) return;
-    if (!draft.tags.length && !draft.experience.trim()) {
-      setError("관심을 하나 고르거나, 해본 일을 한 줄 적어 주세요.");
-      return;
-    }
     setBusy(true);
     setError("");
     controller.current = new AbortController();
     const timeout = setTimeout(() => controller.current?.abort(), 45000);
     try {
-      const result = await requestAnalysis(
+      const fresh = await requestAnalysis(
         draft.experience.trim(),
         draft.tags,
+        turns,
         controller.current.signal,
       );
+      const names = fresh.hypotheses.map((h) => h.trackName);
+      const kept = draft.tracks.filter((name) => names.includes(name));
       update({
-        result,
-        tracks: result.hypotheses.slice(0, 1).map((h) => h.id),
+        ...next,
+        result: fresh,
+        turns,
+        tracks: kept.length ? kept : names.slice(0, 1),
         page: 3,
       });
     } catch (e) {
@@ -325,10 +366,51 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
       setBusy(false);
     }
   }
+
+  async function analyze(event?: FormEvent) {
+    event?.preventDefault();
+    if (!draft.tags.length && !draft.experience.trim()) {
+      setError("관심을 하나 고르거나, 해본 일을 한 줄 적어 주세요.");
+      return;
+    }
+    await runAnalysis(draft.turns, {});
+  }
+
+  async function sendTurn(
+    kind: ConversationTurn["kind"],
+    targetId: string,
+    targetLabel: string,
+    text: string,
+  ) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const turn: ConversationTurn = {
+      id: `turn_${Date.now()}`,
+      kind,
+      targetId,
+      targetLabel,
+      text: trimmed.slice(0, 600),
+    };
+    await runAnalysis([...draft.turns, turn], {});
+    setToast(
+      kind === "correction"
+        ? "정정을 반영해 다시 살펴봤어요."
+        : "답변을 반영해 다시 살펴봤어요.",
+    );
+  }
+
+  function removeTurn(id: string) {
+    const turns = draft.turns.filter((turn) => turn.id !== id);
+    void runAnalysis(turns, {});
+  }
+
   function complete() {
     const selected =
-      draft.result?.hypotheses.filter((h) => draft.tracks.includes(h.id)) || [];
-    const jobs = mergeJobFeedback(draft.jobs, sampleJobs(selected));
+      result?.hypotheses.filter((h) => draft.tracks.includes(h.trackName)) || [];
+    const jobs = mergeJobFeedback(
+      draft.jobs,
+      sampleJobs(selected, result?.evidence || []),
+    );
     update({ jobs, page: "inbox" });
     setFilter("all");
   }
@@ -343,6 +425,120 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
         : status === "passed"
           ? "넘긴 편지로 옮겼어요. 언제든 되돌릴 수 있어요."
           : "도착한 편지로 다시 옮겼어요.",
+    );
+  }
+
+  function renderHypothesis(hypothesis: JobHypothesis) {
+    const picked = draft.tracks.includes(hypothesis.trackName);
+    const quotes = hypothesis.evidenceIds.map(quoteOf).filter(Boolean);
+    return (
+      <article
+        key={hypothesis.id}
+        className={`hypothesis-card ${picked ? "selected" : ""}`}
+      >
+        <button
+          type="button"
+          className="hypothesis-head"
+          aria-pressed={picked}
+          disabled={busy}
+          onClick={() =>
+            update({
+              tracks: picked
+                ? draft.tracks.filter((name) => name !== hypothesis.trackName)
+                : [...draft.tracks, hypothesis.trackName],
+            })
+          }
+        >
+          <h2>{hypothesis.trackName}</h2>
+          <span className={`reading-badge ${hypothesis.status}`}>
+            {statusLabel[hypothesis.status]}
+          </span>
+          <span className="option-check">{picked && <Check size={13} />}</span>
+        </button>
+
+        {quotes.length > 0 && (
+          <div className="evidence-block">
+            <h3>
+              <Quote size={13} /> 내가 쓴 문장에서
+            </h3>
+            <ul>
+              {quotes.map((quote) => (
+                <li key={quote}>「{quote}」</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="interpretation-block">
+          <h3>
+            <Sparkles size={13} />{" "}
+            {result?.mode === "ai" ? "AI가 읽은 내용" : "이렇게 이어봤어요"}
+          </h3>
+          <p>{hypothesis.interpretation}</p>
+        </div>
+
+        {correcting === hypothesis.id ? (
+          <form
+            className="correction-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void sendTurn(
+                "correction",
+                hypothesis.id,
+                hypothesis.trackName,
+                correctionText,
+              );
+              setCorrecting(null);
+              setCorrectionText("");
+            }}
+          >
+            <label htmlFor={`fix-${hypothesis.id}`}>
+              어떤 점이 다른가요? 알려주시면 다시 살펴볼게요.
+            </label>
+            <textarea
+              id={`fix-${hypothesis.id}`}
+              autoFocus
+              maxLength={600}
+              disabled={busy}
+              value={correctionText}
+              placeholder="예: 공원 설계는 전공 과제였을 뿐이고, 저는 설계보다 아이디어를 정리하는 쪽이 더 좋았어요."
+              onChange={(event) => setCorrectionText(event.target.value)}
+            />
+            <div className="correction-actions">
+              <button
+                className="secondary-button"
+                type="submit"
+                disabled={busy || !correctionText.trim()}
+              >
+                정정 반영하기
+              </button>
+              <button
+                type="button"
+                className="skip-button"
+                disabled={busy}
+                onClick={() => {
+                  setCorrecting(null);
+                  setCorrectionText("");
+                }}
+              >
+                취소
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            type="button"
+            className="text-button correction-trigger"
+            disabled={busy}
+            onClick={() => {
+              setCorrecting(hypothesis.id);
+              setCorrectionText("");
+            }}
+          >
+            <PenLine size={13} /> 이 해석은 달라요
+          </button>
+        )}
+      </article>
     );
   }
 
@@ -642,80 +838,178 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
                 <div className="intro">
                   <div className="step-kicker">
                     <Sparkles size={15} />{" "}
-                    {draft.result?.mode === "demo"
-                      ? "입력 기반 체험 결과"
+                    {result?.mode === "demo"
+                      ? "체험 모드 — AI 미연결"
                       : "AI가 찾아본 연결"}
                   </div>
                   <h1 ref={heading} tabIndex={-1}>
-                    {draft.name.trim()
-                      ? `${draft.name.trim()}님의 경험에서`
-                      : "당신이 남긴 이야기에서"}
-                    <br />
-                    가능성을 찾았어요.
+                    {result?.hypotheses.length ? (
+                      <>
+                        {draft.name.trim()
+                          ? `${draft.name.trim()}님의 경험에서`
+                          : "당신이 남긴 이야기에서"}
+                        <br />
+                        가능성을 찾았어요.
+                      </>
+                    ) : (
+                      <>
+                        단정하기 전에,
+                        <br />
+                        조금 더 들려주세요.
+                      </>
+                    )}
                   </h1>
                   <p>
-                    정답이 아닌, 함께 탐색할 출발점이에요.
-                    <br />
-                    조금 더 알아보고 싶은 방향을 골라주세요.
+                    {result?.hypotheses.length ? (
+                      <>
+                        정답이 아닌, 함께 탐색할 출발점이에요.
+                        <br />
+                        아니라고 생각되면 바로 고쳐 말해 주세요.
+                      </>
+                    ) : (
+                      <>
+                        적어주신 문장은 근거로 담아뒀어요.
+                        <br />
+                        어떤 일과 이어지는지는 아직 판단하지 않았어요.
+                      </>
+                    )}
                   </p>
                 </div>
-                {!draft.result?.hypotheses.length ? (
+
+                {error && (
+                  <p className="form-error" role="alert">
+                    {error}
+                  </p>
+                )}
+
+                {result?.hypotheses.length ? (
+                  <div className="hypotheses">
+                    {result.hypotheses.map(renderHypothesis)}
+                  </div>
+                ) : (
                   <div className="empty-result">
                     <Search size={28} />
-                    <h2>조금 더 알면 연결을 찾을 수 있어요</h2>
+                    <h2>아직 방향을 말하기엔 일러요</h2>
                     <p>
-                      어떤 일을 했는지 한 문장 더 적거나, 관심을 하나
-                      골라주세요.
+                      {result?.withheld ||
+                        "어떤 일을 했는지 한 문장 더 적거나, 관심을 하나 골라주세요."}
                     </p>
                     <button className="secondary-button" onClick={() => go(2)}>
                       경험 더하기
                     </button>
                   </div>
-                ) : (
-                  <div className="hypotheses">
-                    {draft.result.hypotheses.map((h) => (
-                      <button
-                        key={h.id}
-                        className={`hypothesis ${draft.tracks.includes(h.id) ? "selected" : ""}`}
-                        aria-pressed={draft.tracks.includes(h.id)}
-                        onClick={() =>
-                          update({
-                            tracks: draft.tracks.includes(h.id)
-                              ? draft.tracks.filter((id) => id !== h.id)
-                              : [...draft.tracks, h.id],
-                          })
-                        }
-                      >
-                        <div className="hypothesis-title">
-                          <h2>{h.trackName}</h2>
-                          <span className="option-check">
-                            {draft.tracks.includes(h.id) && <Check size={13} />}
-                          </span>
-                        </div>
-                        <p>{h.rationale}</p>
-                        <div className="hypothesis-signals">
-                          {h.keySignals.map((signal) => (
-                            <span key={signal}>{signal}</span>
-                          ))}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
                 )}
+
+                {result?.withheld && result.hypotheses.length > 0 && (
+                  <p className="withheld-note" role="note">
+                    <ShieldCheck size={15} /> {result.withheld}
+                  </p>
+                )}
+
+                {openQuestions.length ? (
+                  <section className="question-block">
+                    <h2>
+                      <MessageCircle size={16} /> 조금 더 알고 싶은 게 있어요
+                    </h2>
+                    {openQuestions.map((question) => (
+                      <div className="question-item" key={question.id}>
+                        <p className="question-text">{question.question}</p>
+                        {question.why && (
+                          <p className="question-why">{question.why}</p>
+                        )}
+                        <form
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            void sendTurn(
+                              "answer",
+                              question.id,
+                              question.question,
+                              answers[question.id] || "",
+                            );
+                            setAnswers((old) => ({
+                              ...old,
+                              [question.id]: "",
+                            }));
+                          }}
+                        >
+                          <input
+                            maxLength={600}
+                            disabled={busy}
+                            value={answers[question.id] || ""}
+                            placeholder="생각나는 대로 적어주세요"
+                            aria-label={question.question}
+                            onChange={(event) =>
+                              setAnswers((old) => ({
+                                ...old,
+                                [question.id]: event.target.value,
+                              }))
+                            }
+                          />
+                          <button
+                            className="secondary-button"
+                            type="submit"
+                            disabled={busy || !(answers[question.id] || "").trim()}
+                          >
+                            답하기
+                          </button>
+                        </form>
+                      </div>
+                    ))}
+                  </section>
+                ) : null}
+
+                {draft.turns.length > 0 && (
+                  <section className="turn-log">
+                    <h2>
+                      <FolderOpen size={15} /> 내가 더 들려준 이야기
+                    </h2>
+                    <ul>
+                      {draft.turns.map((turn) => (
+                        <li key={turn.id}>
+                          <span className={`turn-kind ${turn.kind}`}>
+                            {turn.kind === "correction" ? "정정" : "답변"}
+                          </span>
+                          <div>
+                            <small>{turn.targetLabel}</small>
+                            <p>{turn.text}</p>
+                          </div>
+                          <button
+                            type="button"
+                            aria-label="이 이야기 빼기"
+                            disabled={busy}
+                            onClick={() => removeTurn(turn.id)}
+                          >
+                            <X size={14} />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
                 <p className="demo-note">
-                  {draft.result?.mode === "demo"
-                    ? "현재는 관심·키워드로 연결을 찾는 체험 모드예요. 직무 적합성을 확정하거나 경력을 평가하지 않아요."
-                    : "입력한 정보만으로 살펴본 잠정적인 제안이에요. 실제 경험을 더하며 방향을 조정할 수 있어요."}
+                  {result?.mode === "demo"
+                    ? "AI가 연결되지 않아 체험 모드로 돌고 있어요. 적어주신 문장은 근거로만 보여주고, 의미 해석은 하지 않아요."
+                    : "입력한 내용에서 찾은 근거와 그 해석이에요. 적합도 점수는 매기지 않아요."}
                 </p>
+                {busy && (
+                  <p role="status" className="loading-note">
+                    들려주신 이야기를 다시 살펴보고 있어요.
+                  </p>
+                )}
                 <div className="form-actions">
                   <button
                     className="primary-button"
-                    disabled={!draft.tracks.length}
+                    disabled={!draft.tracks.length || busy}
                     onClick={complete}
                   >
                     첫 편지 받아보기 <Mail size={18} />
                   </button>
-                  <button className="skip-button" onClick={() => go(2)}>
+                  <button
+                    className="skip-button"
+                    disabled={busy}
+                    onClick={() => go(2)}
+                  >
                     <ArrowLeft size={14} /> 경험을 더하고 다시 살펴보기
                   </button>
                 </div>
@@ -727,6 +1021,22 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
             name={draft.name}
             experience={draft.experience}
             stage={page}
+            analysed={
+              page === 3 && result
+                ? (() => {
+                    const lead =
+                      result.hypotheses.find((h) =>
+                        draft.tracks.includes(h.trackName),
+                      ) || result.hypotheses[0];
+                    return lead
+                      ? {
+                          role: lead.trackName,
+                          quote: quoteOf(lead.evidenceIds[0] || ""),
+                        }
+                      : null;
+                  })()
+                : undefined
+            }
           />
         </main>
       )}
@@ -931,20 +1241,18 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
               </p>
               <div className="context-summary">
                 <label>탐색 중인 방향</label>
-                {draft.result?.hypotheses
-                  .filter((h) => draft.tracks.includes(h.id))
-                  .map((h) => (
-                    <span key={h.id}>
-                      <Check size={13} />
-                      {h.trackName}
-                    </span>
-                  ))}
+                {draft.tracks.map((name) => (
+                  <span key={name}>
+                    <Check size={13} />
+                    {name}
+                  </span>
+                ))}
               </div>
               <button className="secondary-button" onClick={() => go(2)}>
                 <Plus size={16} /> 경험 추가하고 다시 분석
               </button>
               <button className="text-button" onClick={() => go(3)}>
-                탐색 방향 바꾸기
+                해석 보고 고쳐 말하기
                 <ChevronRight size={14} />
               </button>
               <div className="sidebar-footnote">
@@ -978,10 +1286,16 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
               아니요. 관심 하나 또는 짧은 경험만으로 시작할 수 있어요. 학력,
               교육, 자격증, 프로젝트, GitHub 등은 이후 경험에 추가해 주세요.
             </p>
-            <h3>추천 결과가 제 적성을 결정하나요?</h3>
+            <h3>결과가 제 적성을 결정하나요?</h3>
             <p>
-              가능한 방향을 살펴보는 출발점이에요. 결과를 읽고 직접 방향을
-              고르거나, 경험을 수정해 다시 분석할 수 있어요.
+              아니요. 적어주신 문장에서 찾은 근거와, 그걸 그렇게 읽은 이유를
+              나눠서 보여줄 뿐이에요. 해석이 틀렸다면 '이 해석은 달라요'로
+              고쳐 말할 수 있고, 그러면 다시 살펴봐요.
+            </p>
+            <h3>적합도 점수는 왜 없나요?</h3>
+            <p>
+              점수를 매길 근거가 없기 때문이에요. 실제 공고의 자격요건과 맞춰본
+              것이 아니라서, 숫자를 붙이면 없는 확신을 만들게 돼요.
             </p>
             <h3>지금 보이는 공고에 지원할 수 있나요?</h3>
             <p>
@@ -1007,6 +1321,7 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
                   setDraft(fresh());
                   setHelp(false);
                   setOpenedId(null);
+                  setAnswers({});
                   setToast("이 브라우저의 입력 내용을 지웠어요.");
                 }}
               >
@@ -1033,18 +1348,13 @@ export default function OnboardingFlow({ onHome }: { onHome: () => void }) {
             <p>{currentJob.arrivalReason}</p>
             <div className="report-section">
               <span className="report-section-icon">
-                <Check size={18} />
+                <Quote size={18} />
               </span>
               <div>
-                <h3>연결의 출발점</h3>
+                <h3>내가 쓴 문장에서</h3>
                 {currentJob.pros.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
-                <div className="hypothesis-signals">
-                  {currentJob.evidences.map((e) => (
-                    <span key={e}>{e}</span>
-                  ))}
-                </div>
               </div>
             </div>
             <div className="report-section">
